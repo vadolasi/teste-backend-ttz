@@ -22,7 +22,7 @@
 		"migration:create": "typeorm-ts-node-commonjs migration:create",
 		"migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/typeorm.config.ts",
 		"migration:run": "typeorm-ts-node-commonjs migration:run -d src/typeorm.config.ts",
-		"prepare": "lefthook install"
+		"prepare": "if [ \"$CI\" != \"true\" ]; then lefthook install; fi"
 	},
 	"dependencies": {
 		"@fastify/helmet": "^13.0.1",
