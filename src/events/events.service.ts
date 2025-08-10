@@ -11,9 +11,10 @@ import { from as copyFrom } from "pg-copy-streams"
 import { Repository } from "typeorm"
 import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
+import { LeaderboardDto } from "./dto/leaderboard.dto"
+import { PlayerStatsDto } from "./dto/player-stats.dto"
+import { TopItemDto } from "./dto/top-item.dto"
 import { EventEntity } from "./entities/event.entity"
-import { LeaderboardDto } from "./entities/leaderboard.dto"
-import { PlayerStatsDto } from "./entities/player-stats.dto"
 
 @Injectable()
 export class EventsService {
@@ -180,5 +181,24 @@ export class EventsService {
 			totalItemsCollected: parseInt(totalItensCollectedResult.total, 10) || 0,
 			score: parseInt(scoreResult.score, 10)
 		}
+	}
+
+	async getTopItems(): Promise<TopItemDto[]> {
+		const rawTopItems = await this.eventsRepository
+			.createQueryBuilder("event")
+			.select("event.data ->> 'item'", "itemName")
+			.addSelect("SUM((event.data ->> 'qty')::BIGINT)", "totalCollected")
+			.where("event.type = 'ITEM_PICKUP'")
+			.groupBy('"itemName"')
+			.orderBy('"totalCollected"', "DESC")
+			.limit(20)
+			.getRawMany()
+
+		const topItems = rawTopItems.map((item) => ({
+			itemName: item.itemName,
+			totalCollected: parseInt(item.totalCollected, 10)
+		}))
+
+		return topItems
 	}
 }

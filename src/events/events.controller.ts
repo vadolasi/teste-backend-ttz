@@ -18,8 +18,9 @@ import {
 } from "@nestjs/swagger"
 import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
-import { LeaderboardDto } from "./entities/leaderboard.dto"
-import { PlayerStatsDto } from "./entities/player-stats.dto"
+import { LeaderboardDto } from "./dto/leaderboard.dto"
+import { PlayerStatsDto } from "./dto/player-stats.dto"
+import { TopItemDto } from "./dto/top-item.dto"
 import { EventsService } from "./events.service"
 
 @Controller()
@@ -83,5 +84,15 @@ export class EventsController {
 	})
 	getPlayerStats(@Param("playerId") playerId: string): Promise<PlayerStatsDto> {
 		return this.eventsService.getPlayerStats(playerId)
+	}
+
+	@Get("/items/top")
+	@ApiOperation({ summary: "Retorna os itens mais coletados" })
+	@ApiOkResponse({
+		description: "Lista dos itens mais coletados retornada com sucesso",
+		type: [TopItemDto]
+	})
+	getTopItems(): Promise<TopItemDto[]> {
+		return this.eventsService.getTopItems()
 	}
 }
