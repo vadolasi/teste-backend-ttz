@@ -1,17 +1,23 @@
 import { createReadStream } from "node:fs"
+import { unlink } from "node:fs/promises"
 import readline from "node:readline/promises"
 import { pipeline } from "node:stream/promises"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
-import { Injectable } from "@nestjs/common"
+import { CACHE_MANAGER } from "@nestjs/cache-manager"
+import { Inject, Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { Job } from "bullmq"
+import type { Cache } from "cache-manager"
 import { Pool } from "pg"
 import { from as copyFrom } from "pg-copy-streams"
 
 @Processor("file-ingestion")
 @Injectable()
 export class IngestionProcessor extends WorkerHost {
-	constructor(private readonly configService: ConfigService) {
+	constructor(
+		private readonly configService: ConfigService,
+		@Inject(CACHE_MANAGER) private readonly cacheManager: Cache
+	) {
 		super()
 	}
 
@@ -34,6 +40,8 @@ export class IngestionProcessor extends WorkerHost {
 		await pipeline(fileStream, copyStream)
 		client.release()
 		await pgPool.end()
+		await this.cacheManager.clear()
+    await unlink(filePath)
 	}
 
 	async *formatLogFile(filePath: string): AsyncGenerator<string> {

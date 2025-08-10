@@ -1,4 +1,5 @@
 import { type File, FileInterceptor } from "@nest-lab/fastify-multer"
+import { CacheInterceptor } from "@nestjs/cache-manager"
 import {
 	Controller,
 	Get,
@@ -25,6 +26,7 @@ import { TopItemDto } from "./dto/top-item.dto"
 import { EventsService } from "./events.service"
 
 @Controller()
+@UseInterceptors(CacheInterceptor)
 export class EventsController {
 	constructor(private readonly eventsService: EventsService) {}
 
