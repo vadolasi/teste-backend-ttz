@@ -3,4 +3,5 @@ onlyBuiltDependencies:
   - '@scarf/scarf'
   - '@swc/core'
   - lefthook
+  - msgpackr-extract
   - unrs-resolver

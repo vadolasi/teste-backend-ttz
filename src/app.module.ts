@@ -1,7 +1,12 @@
+import { createKeyv } from "@keyv/redis"
+import { BullModule } from "@nestjs/bullmq"
+import { CacheModule } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { CacheableMemory } from "cacheable"
 import * as Joi from "joi"
+import { Keyv } from "keyv"
 
 @Module({
 	imports: [
@@ -17,7 +22,9 @@ import * as Joi from "joi"
 				DB_PORT: Joi.number().port().default(5432),
 				DB_USERNAME: Joi.string().default("timescaledb"),
 				DB_PASSWORD: Joi.string().default("timescaledb"),
-				DB_NAME: Joi.string().default("timescaledb")
+				DB_NAME: Joi.string().default("timescaledb"),
+				REDIS_HOST: Joi.string().default("localhost"),
+				REDIS_PORT: Joi.number().port().default(6379)
 			})
 		}),
 		TypeOrmModule.forRootAsync({
@@ -31,6 +38,28 @@ import * as Joi from "joi"
 				entities: [`${__dirname}/**/*.entity{.ts,.js}`],
 				synchronize: configService.get("NODE_ENV") !== "production",
 				logging: configService.get("NODE_ENV") === "development"
+			}),
+			inject: [ConfigService]
+		}),
+		CacheModule.registerAsync({
+			useFactory: async (configService: ConfigService) => ({
+				stores: [
+					new Keyv({
+						store: new CacheableMemory({ ttl: 60000, lruSize: 5000 })
+					}),
+					createKeyv(
+						`redis://${configService.get("REDIS_HOST")}:${configService.get("REDIS_PORT")}`
+					)
+				]
+			}),
+			inject: [ConfigService]
+		}),
+		BullModule.forRootAsync({
+			useFactory: (configService: ConfigService) => ({
+				connection: {
+					host: configService.get("REDIS_HOST"),
+					port: configService.get("REDIS_PORT")
+				}
 			}),
 			inject: [ConfigService]
 		})
