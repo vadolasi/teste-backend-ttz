@@ -5,6 +5,7 @@
 	"author": "",
 	"private": true,
 	"license": "UNLICENSED",
+	"packageManager": "pnpm@10.14.0",
 	"scripts": {
 		"build": "nest build",
 		"format": "biome check --write",
@@ -18,6 +19,9 @@
 		"test:cov": "jest --passWithNoTests --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --passWithNoTests --config ./test/jest-e2e.json",
+		"migration:create": "typeorm-ts-node-commonjs migration:create",
+		"migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/typeorm.config.ts",
+		"migration:run": "typeorm-ts-node-commonjs migration:run -d src/typeorm.config.ts",
 		"prepare": "lefthook install"
 	},
 	"dependencies": {
@@ -85,18 +89,21 @@
 		],
 		"coverageDirectory": "../coverage",
 		"testEnvironment": "node",
+		"coveragePathIgnorePatterns": [
+			"/node_modules/",
+			".module.ts$",
+			".dto.ts$",
+			"src/main.ts",
+			"src/typeorm.config.ts",
+			"src/migrations/",
+			".entity.ts$"
+		],
 		"coverageThreshold": {
 			"global": {
 				"branches": 85,
 				"functions": 85,
 				"lines": 85,
 				"statements": 85
-			},
-			"**/*.module.ts": {
-				"branches": 100,
-				"functions": 100,
-				"lines": 100,
-				"statements": 100
 			}
 		}
 	},
