@@ -3,6 +3,7 @@ import {
 	Controller,
 	Get,
 	HttpCode,
+	Param,
 	Post,
 	Query,
 	UploadedFile,
@@ -18,6 +19,7 @@ import {
 import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
 import { LeaderboardDto } from "./entities/leaderboard.dto"
+import { PlayerStatsDto } from "./entities/player-stats.dto"
 import { EventsService } from "./events.service"
 
 @Controller()
@@ -71,5 +73,15 @@ export class EventsController {
 	})
 	getLeaderboard(): Promise<LeaderboardDto[]> {
 		return this.eventsService.getLeaderboard()
+	}
+
+	@Get("/players/:playerId/stats")
+	@ApiOperation({ summary: "Retorna as estatísticas de um jogador" })
+	@ApiOkResponse({
+		description: "Estatísticas do jogador retornadas com sucesso",
+		type: PlayerStatsDto
+	})
+	getPlayerStats(@Param("playerId") playerId: string): Promise<PlayerStatsDto> {
+		return this.eventsService.getPlayerStats(playerId)
 	}
 }

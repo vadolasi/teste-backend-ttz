@@ -13,6 +13,7 @@ import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
 import { EventEntity } from "./entities/event.entity"
 import { LeaderboardDto } from "./entities/leaderboard.dto"
+import { PlayerStatsDto } from "./entities/player-stats.dto"
 
 @Injectable()
 export class EventsService {
@@ -115,20 +116,69 @@ export class EventsService {
 		return result
 	}
 
-  async getLeaderboard(): Promise<LeaderboardDto[]> {
-    const result = await this.eventsRepository
-      .createQueryBuilder("event")
-      .select("event.data ->> 'player_id'", "player")
-      .addSelect("SUM((event.data ->> 'points')::BIGINT)", "score")
-      .where("event.type = 'SCORE'")
-      .groupBy('"player"')
-      .orderBy('"score"', "DESC")
-      .limit(100)
-      .getRawMany()
-    
-    return result.map(row => ({
-      player: row.player,
-      score: parseInt(row.score, 10)
-    }))
-  }
+	async getLeaderboard(): Promise<LeaderboardDto[]> {
+		const result = await this.eventsRepository
+			.createQueryBuilder("event")
+			.select("event.data ->> 'player_id'", "player")
+			.addSelect("SUM((event.data ->> 'points')::BIGINT)", "score")
+			.where("event.type = 'SCORE'")
+			.groupBy('"player"')
+			.orderBy('"score"', "DESC")
+			.limit(100)
+			.getRawMany()
+
+		return result.map((row) => ({
+			player: row.player,
+			score: parseInt(row.score, 10)
+		}))
+	}
+
+	async getPlayerStats(playerId: string): Promise<PlayerStatsDto> {
+		const [
+			playserNameResult,
+			questsCompleted,
+			bossesDefeated,
+			totalItensCollectedResult,
+			scoreResult
+		] = await Promise.all([
+			await this.eventsRepository
+				.createQueryBuilder("event")
+				.select("event.data ->> 'name'", "playerName")
+				.where("event.type = 'PLAYER_JOIN'")
+				.andWhere("event.data ->> 'id' = :playerId", { playerId })
+				.orderBy("event.time", "DESC")
+				.limit(1)
+				.getRawOne(),
+			this.eventsRepository
+				.createQueryBuilder("event")
+				.where("event.type = 'QUEST_COMPLETE'")
+				.andWhere("event.data ->> 'player_id' = :playerId", { playerId })
+				.getCount(),
+			this.eventsRepository
+				.createQueryBuilder("event")
+				.where("event.type = 'BOSS_DEFEAT'")
+				.andWhere("event.data ->> 'defeated_by' = :playerId", { playerId })
+				.getCount(),
+			await this.eventsRepository
+				.createQueryBuilder("event")
+				.select("SUM((event.data ->> 'qty')::INT)", "total")
+				.where("event.type = 'ITEM_PICKUP'")
+				.andWhere("event.data ->> 'player_id' = :playerId", { playerId })
+				.getRawOne(),
+			this.eventsRepository
+				.createQueryBuilder("event")
+				.select("SUM((event.data ->> 'points')::BIGINT)", "score")
+				.where("event.type = 'SCORE'")
+				.andWhere("event.data ->> 'player_id' = :playerId", { playerId })
+				.getRawOne()
+		])
+
+		return {
+			name: playserNameResult.playerName,
+			questsCompleted,
+			bossesDefeated,
+			totalItemsCollected: parseInt(totalItensCollectedResult.total, 10) || 0,
+			score: parseInt(scoreResult.score, 10)
+		}
+	}
 }
