@@ -12,6 +12,7 @@ import { Repository } from "typeorm"
 import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
 import { LeaderboardDto } from "./dto/leaderboard.dto"
+import { PlayerDto } from "./dto/player.dto"
 import { PlayerStatsDto } from "./dto/player-stats.dto"
 import { TopItemDto } from "./dto/top-item.dto"
 import { EventEntity } from "./entities/event.entity"
@@ -132,6 +133,19 @@ export class EventsService {
 			player: row.player,
 			score: parseInt(row.score, 10)
 		}))
+	}
+
+	async getAllPlayers(): Promise<PlayerDto[]> {
+		const players = await this.eventsRepository
+			.createQueryBuilder("event")
+			.select("DISTINCT ON (event.data ->> 'id') event.data ->> 'id'", "id")
+			.addSelect("event.data ->> 'name'", "name")
+			.where("event.type = 'PLAYER_JOIN'")
+			.orderBy("event.data ->> 'id'")
+			.addOrderBy("event.time", "DESC")
+			.getRawMany()
+
+		return players
 	}
 
 	async getPlayerStats(playerId: string): Promise<PlayerStatsDto> {

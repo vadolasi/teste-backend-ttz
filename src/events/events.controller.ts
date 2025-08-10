@@ -19,6 +19,7 @@ import {
 import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
 import { LeaderboardDto } from "./dto/leaderboard.dto"
+import { PlayerDto } from "./dto/player.dto"
 import { PlayerStatsDto } from "./dto/player-stats.dto"
 import { TopItemDto } from "./dto/top-item.dto"
 import { EventsService } from "./events.service"
@@ -74,6 +75,16 @@ export class EventsController {
 	})
 	getLeaderboard(): Promise<LeaderboardDto[]> {
 		return this.eventsService.getLeaderboard()
+	}
+
+	@Get("/players")
+	@ApiOperation({ summary: "Retorna a lista de jogadores" })
+	@ApiOkResponse({
+		description: "Lista de jogadores retornada com sucesso",
+		type: [PlayerDto]
+	})
+	getPlayers(): Promise<PlayerDto[]> {
+		return this.eventsService.getAllPlayers()
 	}
 
 	@Get("/players/:playerId/stats")
