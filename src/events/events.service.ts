@@ -12,6 +12,7 @@ import { Repository } from "typeorm"
 import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
 import { EventEntity } from "./entities/event.entity"
+import { LeaderboardDto } from "./entities/leaderboard.dto"
 
 @Injectable()
 export class EventsService {
@@ -113,4 +114,21 @@ export class EventsService {
 
 		return result
 	}
+
+  async getLeaderboard(): Promise<LeaderboardDto[]> {
+    const result = await this.eventsRepository
+      .createQueryBuilder("event")
+      .select("event.data ->> 'player_id'", "player")
+      .addSelect("SUM((event.data ->> 'points')::BIGINT)", "score")
+      .where("event.type = 'SCORE'")
+      .groupBy('"player"')
+      .orderBy('"score"', "DESC")
+      .limit(100)
+      .getRawMany()
+    
+    return result.map(row => ({
+      player: row.player,
+      score: parseInt(row.score, 10)
+    }))
+  }
 }

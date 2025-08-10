@@ -17,13 +17,14 @@ import {
 } from "@nestjs/swagger"
 import { EventDto } from "./dto/event.dto"
 import { GetLastEventsDto } from "./dto/get-last-events.dto"
+import { LeaderboardDto } from "./entities/leaderboard.dto"
 import { EventsService } from "./events.service"
 
-@Controller("events")
+@Controller()
 export class EventsController {
 	constructor(private readonly eventsService: EventsService) {}
 
-	@Post("/")
+	@Post("/events")
 	@ApiOperation({ summary: "Faz upload do arquivo de logs" })
 	@ApiConsumes("multipart/form-data")
 	@ApiBody({
@@ -52,7 +53,7 @@ export class EventsController {
 		this.eventsService.enqueueLogFile(file.path)
 	}
 
-	@Get("/")
+	@Get("/events")
 	@ApiOperation({ summary: "Retorna os ultimos eventos" })
 	@ApiOkResponse({
 		description: "Lista de eventos retornada com sucesso",
@@ -60,5 +61,15 @@ export class EventsController {
 	})
 	getLastEvents(@Query() query: GetLastEventsDto): Promise<EventDto[]> {
 		return this.eventsService.getLastEvents(query)
+	}
+
+	@Get("/leaderboard")
+	@ApiOperation({ summary: "Retorna o leaderboard" })
+	@ApiOkResponse({
+		description: "Leaderboard retornado com sucesso",
+		type: [LeaderboardDto]
+	})
+	getLeaderboard(): Promise<LeaderboardDto[]> {
+		return this.eventsService.getLeaderboard()
 	}
 }
