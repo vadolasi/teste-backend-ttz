@@ -65,5 +65,5 @@ export class Event {
 
 	@Column({ type: "jsonb", nullable: true })
 	@Index("idx_events_data", { synchronize: false })
-	data?: Record<string, string | number>
+	data?: Record<string, string | number | [number, number]>
 }

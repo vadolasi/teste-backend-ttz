@@ -1,0 +1,13 @@
+diff --git a/lib/lib/content-parser.js b/lib/lib/content-parser.js
+index 180966a255929187b835a84fd24e382de618c094..0d4c381b41f728aa6075c00d3bc11fa458a9d602 100644
+--- a/lib/lib/content-parser.js
++++ b/lib/lib/content-parser.js
+@@ -16,7 +16,7 @@ function isMultipart() {
+ }
+ exports.isMultipart = isMultipart;
+ function fastifyMulter(fastify, _options, next) {
+-    fastify.addContentTypeParser('multipart', setMultipart);
++    fastify.addContentTypeParser(['multipart', 'multipart/form-data'], setMultipart);
+     fastify.decorateRequest('isMultipart', isMultipart);
+     next();
+ }

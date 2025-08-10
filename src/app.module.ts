@@ -1,4 +1,5 @@
 import { createKeyv } from "@keyv/redis"
+import { FastifyMulterModule } from "@nest-lab/fastify-multer"
 import { BullModule } from "@nestjs/bullmq"
 import { CacheModule } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
@@ -65,6 +66,7 @@ import { EventsModule } from "./events/events.module"
 			}),
 			inject: [ConfigService]
 		}),
+		FastifyMulterModule,
 		EventsModule
 	],
 	controllers: [],
