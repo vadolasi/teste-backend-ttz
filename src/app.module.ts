@@ -1,13 +1,9 @@
-import { createKeyv } from "@keyv/redis"
 import { FastifyMulterModule } from "@nest-lab/fastify-multer"
 import { BullModule } from "@nestjs/bullmq"
-import { CacheModule } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { CacheableMemory } from "cacheable"
 import * as Joi from "joi"
-import { Keyv } from "keyv"
 import { EventEntity } from "./events/entities/event.entity"
 import { EventsModule } from "./events/events.module"
 
@@ -42,19 +38,6 @@ import { EventsModule } from "./events/events.module"
 				synchronize: configService.get("NODE_ENV") !== "production",
 				logging: configService.get("NODE_ENV") === "development",
 				migrationsRun: configService.get("NODE_ENV") === "production"
-			}),
-			inject: [ConfigService]
-		}),
-		CacheModule.registerAsync({
-			useFactory: async (configService: ConfigService) => ({
-				stores: [
-					new Keyv({
-						store: new CacheableMemory({ ttl: 60000, lruSize: 5000 })
-					}),
-					createKeyv(
-						`redis://${configService.get("REDIS_HOST")}:${configService.get("REDIS_PORT")}`
-					)
-				]
 			}),
 			inject: [ConfigService]
 		}),
