@@ -4,15 +4,22 @@ import { pipeline } from "node:stream/promises"
 import { InjectQueue } from "@nestjs/bullmq"
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
+import { InjectRepository } from "@nestjs/typeorm"
 import { Queue } from "bullmq"
 import { Pool } from "pg"
 import { from as copyFrom } from "pg-copy-streams"
+import { Repository } from "typeorm"
+import { EventDto } from "./dto/event.dto"
+import { GetLastEventsDto } from "./dto/get-last-events.dto"
+import { EventEntity } from "./entities/event.entity"
 
 @Injectable()
 export class EventsService {
 	constructor(
 		@InjectQueue("file-ingestion") private queue: Queue,
-		private readonly configService: ConfigService
+		private readonly configService: ConfigService,
+		@InjectRepository(EventEntity)
+		private readonly eventsRepository: Repository<EventEntity>
 	) {}
 
 	enqueueLogFile(filePath: string): void {
@@ -79,5 +86,31 @@ export class EventsService {
 
 			yield formattedFile
 		}
+	}
+
+	async getLastEvents(data: GetLastEventsDto): Promise<EventDto[]> {
+		const limit = data.limit || 100
+
+		const query = this.eventsRepository
+			.createQueryBuilder("event")
+			.orderBy("event.time", "DESC")
+			.limit(limit)
+
+		if (data.category) {
+			console.log(data.category)
+			query.andWhere("event.category = :category", {
+				category: data.category
+			})
+		}
+
+		if (data.type) {
+			query.andWhere("event.type = :type", {
+				type: data.type
+			})
+		}
+
+		const result = await query.getMany()
+
+		return result
 	}
 }

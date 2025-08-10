@@ -8,6 +8,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { CacheableMemory } from "cacheable"
 import * as Joi from "joi"
 import { Keyv } from "keyv"
+import { EventEntity } from "./events/entities/event.entity"
 import { EventsModule } from "./events/events.module"
 
 @Module({
@@ -37,7 +38,7 @@ import { EventsModule } from "./events/events.module"
 				username: configService.get("DB_USERNAME"),
 				password: configService.get("DB_PASSWORD"),
 				database: configService.get("DB_NAME"),
-				entities: [`${__dirname}/**/*.entity.ts`],
+				entities: [EventEntity],
 				synchronize: configService.get("NODE_ENV") !== "production",
 				logging: configService.get("NODE_ENV") === "development",
 				migrationsRun: configService.get("NODE_ENV") === "production"

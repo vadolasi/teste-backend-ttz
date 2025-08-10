@@ -1,7 +1,7 @@
 import { Hypertable, TimeColumn } from "@timescaledb/typeorm"
 import { Column, Entity, Index } from "typeorm"
 
-const EventCategories = {
+export const EventCategories = {
 	COMBAT: "COMBAT",
 	CHAT: "CHAT",
 	GAME: "GAME",
@@ -9,7 +9,7 @@ const EventCategories = {
 	INFO: "INFO"
 } as const
 
-const EventTypes = {
+export const EventTypes = {
 	// COMBAT
 	BOSS_DEFEAT: "BOSS_DEFEAT",
 	BOSS_DAMAGE: "BOSS_DAMAGE",
@@ -47,7 +47,7 @@ const EventTypes = {
 	}
 })
 @Index("idx_events_caterory_type", { synchronize: false })
-export class Event {
+export class EventEntity {
 	@TimeColumn()
 	time!: Date
 

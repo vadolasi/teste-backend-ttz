@@ -1,14 +1,14 @@
 import { BullModule } from "@nestjs/bullmq"
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { Event } from "./entities/event.entity"
+import { EventEntity } from "./entities/event.entity"
 import { EventsController } from "./events.controller"
 import { EventsService } from "./events.service"
 import { IngestionProcessor } from "./ingestion.processor"
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Event]),
+		TypeOrmModule.forFeature([EventEntity]),
 		BullModule.registerQueue({
 			name: "file-ingestion",
 			defaultJobOptions: {

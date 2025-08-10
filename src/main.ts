@@ -1,4 +1,5 @@
 import helmet from "@fastify/helmet"
+import { ValidationPipe } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { NestFactory } from "@nestjs/core"
 import {
@@ -30,6 +31,8 @@ async function bootstrap() {
 	SwaggerModule.setup("api", app, documentFactory)
 
 	const configService = app.get(ConfigService)
+
+	app.useGlobalPipes(new ValidationPipe({ transform: true }))
 
 	await app.listen(configService.get("PORT"))
 }
