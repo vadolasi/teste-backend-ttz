@@ -6,12 +6,14 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import * as Joi from "joi"
 import { EventEntity } from "./events/entities/event.entity"
 import { EventsModule } from "./events/events.module"
+import { CreateEvents1754881729972 } from "./migrations/1754881729972-create-events"
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
 			cache: true,
+      ignoreEnvFile: true,
 			validationSchema: Joi.object({
 				NODE_ENV: Joi.string()
 					.valid("development", "production", "test", "provision")
@@ -37,7 +39,8 @@ import { EventsModule } from "./events/events.module"
 				entities: [EventEntity],
 				synchronize: configService.get("NODE_ENV") !== "production",
 				logging: configService.get("NODE_ENV") === "development",
-				migrationsRun: configService.get("NODE_ENV") === "production"
+        migrations: [CreateEvents1754881729972],
+        migrationsRun: configService.get("NODE_ENV") === "production"
 			}),
 			inject: [ConfigService]
 		}),

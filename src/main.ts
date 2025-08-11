@@ -34,7 +34,7 @@ async function bootstrap() {
 
 	app.useGlobalPipes(new ValidationPipe({ transform: true }))
 
-	await app.listen(configService.get("PORT"))
+	await app.listen({ host: "0.0.0.0", port: configService.get("PORT") })
 }
 
 bootstrap()
